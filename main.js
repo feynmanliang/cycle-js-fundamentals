@@ -2,8 +2,11 @@ import Rx from 'rxjs';
 
 // Logic (functional)
 function main() {
-  return Rx.Observable.timer(0, 1000)
-    .map(i => `Seconds elapsed ${i}`);
+  return {
+    DOM: Rx.Observable.timer(0, 1000)
+      .map(i => `Seconds elapsed ${i}`),
+    Log: Rx.Observable.timer(0, 2000).map(i => 2*i),
+  };
 }
 
 // Effects (imperative)
@@ -18,6 +21,7 @@ function consoleLogEffect(msg$) {
   msg$.subscribe(msg => console.log(msg));
 }
 
-const sink = main();
-DOMEffect(sink);
-consoleLogEffect(sink);
+// Wiring (different) sinks to (different) effects
+const sinks = main();
+DOMEffect(sinks.DOM);
+consoleLogEffect(sinks.Log);
