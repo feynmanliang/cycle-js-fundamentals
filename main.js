@@ -9,19 +9,31 @@ function main() {
   };
 }
 
-// Effects (imperative)
-function DOMEffect(text$) {
+// Drivers (aka effects, imperative)
+// OS drivers = interface between software and hardware
+// Here, hardware = effects, drivers = interfaces between logic and effects
+function DOMDriver(text$) {
   text$.subscribe(text => {
     const container = document.querySelector('#app');
     container.textContent = text;
   });
 }
 
-function consoleLogEffect(msg$) {
+function consoleLogDriver(msg$) {
   msg$.subscribe(msg => console.log(msg));
 }
 
 // Wiring (different) sinks to (different) effects
-const sinks = main();
-DOMEffect(sinks.DOM);
-consoleLogEffect(sinks.Log);
+function run(mainFn, effects) {
+  const sinks = mainFn();
+  Object.keys(effects).forEach(key => {
+    effects[key](sinks[key]);
+  })
+}
+
+// Effects keys must match sink keys
+const drivers = {
+  DOM: DOMDriver,
+  Log: consoleLogDriver,
+}
+run(main, drivers);
