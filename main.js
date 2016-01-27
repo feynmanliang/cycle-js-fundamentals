@@ -1,9 +1,9 @@
 import Rx from 'rxjs';
 
 // Logic (functional)
-function main(DOMSource) {
-  const click$ = DOMSource;
-  return {
+function main(sources) {
+  const click$ = sources.DOM;
+  const sinks = {
     DOM: click$
       .startWith(null)
       .switchMap(() =>
@@ -12,6 +12,7 @@ function main(DOMSource) {
       ),
     Log: Rx.Observable.timer(0, 2000).map(i => 2*i),
   };
+  return sinks;
 }
 
 // source: input (read) effects
@@ -36,13 +37,15 @@ function consoleLogDriver(msg$) {
 
 // Wiring (different) sinks to (different) effects
 function run(mainFn, drivers) {
-  const proxyDOMSource = new Rx.Subject();
-  const sinks = mainFn(proxyDOMSource);
-  const DOMSource = drivers.DOM(sinks.DOM);
-  DOMSource.subscribe(click => proxyDOMSource.next(click));
-  //Object.keys(drivers).forEach(key => {
-  //  drivers[key](sinks[key]);
-  //})
+  const proxySources = {};
+  Object.keys(drivers).forEach(key => {
+    proxySources[key] = new Rx.Subject();
+  });
+  const sinks = mainFn(proxySources);
+  Object.keys(drivers).forEach(key => {
+    const source = drivers[key](sinks[key]);
+    source.subscribe(x => proxySources[key].next(x))
+  })
 }
 
 // Effects keys must match sink keys
