@@ -1,4 +1,5 @@
-import Rx from 'rxjs';
+import Rx from 'rx';
+import Cycle from '@cycle/core';
 
 // Logic (functional)
 function main(sources) {
@@ -6,7 +7,7 @@ function main(sources) {
   const sinks = {
     DOM: click$
       .startWith(null)
-      .switchMap(() =>
+      .flatMapLatest(() =>
         Rx.Observable.timer(0, 1000)
         .map(i => `Seconds elapsed ${i}`),
       ),
@@ -44,7 +45,7 @@ function run(mainFn, drivers) {
   const sinks = mainFn(proxySources);
   Object.keys(drivers).forEach(key => {
     const source = drivers[key](sinks[key]);
-    source.subscribe(x => proxySources[key].next(x))
+    source.subscribe(x => proxySources[key].onNext(x))
   })
 }
 
@@ -53,4 +54,5 @@ const drivers = {
   DOM: DOMDriver,
   Log: consoleLogDriver,
 }
-run(main, drivers);
+
+Cycle.run(main, drivers);

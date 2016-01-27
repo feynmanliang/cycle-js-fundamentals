@@ -17,6 +17,7 @@
     "webpack-dev-server": "^1.14.1"
   },
   "dependencies": {
-    "rxjs": "^5.0.0-beta.1"
+    "@cycle/core": "^6.0.0",
+    "rx": "^4.0.7"
   }
 }
