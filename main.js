@@ -15,12 +15,13 @@ function main(sources) {
     DOM: mouseover$
       .startWith(null)
       .flatMapLatest(() =>
-        Rx.Observable.timer(0, 1000)
-        .map(i => {
-          return h('H1', [
-            h('SPAN', [ `Seconds elapsed: ${i}` ],)
-          ]);
-        }),
+          Rx.Observable.timer(0, 1000)
+            .map(i =>
+               h('H1', [
+                 h('SPAN', [
+                   `Seconds elapsed: ${i}` ],)
+               ])
+            )
       ),
     Log: Rx.Observable.timer(0, 2000).map(i => 2*i),
   };
@@ -33,7 +34,8 @@ function main(sources) {
 // Drivers (aka effects, imperative)
 // OS drivers = interface between software and hardware
 // Here, hardware = effects, drivers = interfaces between logic and effects
-function DOMDriver(obj$) {
+function makeDOMDriver(mountSelector) {
+  return function DOMDriver(obj$) {
   function createElement(obj) {
     const element = document.createElement(obj.tagName);
     obj.children
@@ -47,7 +49,7 @@ function DOMDriver(obj$) {
   }
 
   obj$.subscribe(obj => {
-    const container = document.querySelector('#app');
+    const container = document.querySelector(mountSelector);
     container.innerHTML = '';
     const element = createElement(obj);
     container.appendChild(element);
@@ -60,6 +62,7 @@ function DOMDriver(obj$) {
     }
   }
   return DOMSource;
+  }
 }
 
 function consoleLogDriver(msg$) {
@@ -81,7 +84,7 @@ function run(mainFn, drivers) {
 
 // Effects keys must match sink keys
 const drivers = {
-  DOM: DOMDriver,
+  DOM: makeDOMDriver('#app'),
   Log: consoleLogDriver,
 }
 
