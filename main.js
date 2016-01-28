@@ -1,6 +1,13 @@
 import Rx from 'rx';
 import Cycle from '@cycle/core';
 
+function h(tagName, children) {
+  return {
+    tagName,
+    children
+  };
+}
+
 // Logic (functional)
 function main(sources) {
   const mouseover$ = sources.DOM.selectEvents('span', 'mouseover');
@@ -10,17 +17,9 @@ function main(sources) {
       .flatMapLatest(() =>
         Rx.Observable.timer(0, 1000)
         .map(i => {
-          return {
-            tagName: 'H1',
-            children: [
-              {
-                tagName: 'SPAN',
-                children: [
-                  `Seconds elapsed: ${i}`,
-                ],
-              },
-            ]
-          };
+          return h('H1', [
+            h('SPAN', [ `Seconds elapsed: ${i}` ],)
+          ]);
         }),
       ),
     Log: Rx.Observable.timer(0, 2000).map(i => 2*i),
